@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using Events;
 using UnityEngine.EventSystems;
 using GameConstants;
+using Saver;
 
 namespace Ingame
 {
@@ -39,19 +40,31 @@ namespace Ingame
 
             // save the original position, so that we know if the tile is in correct position or not
             _origPos = _rect.position;
-            SubscribeEvents();
+            // SubscribeEvents();
         }
 
-        private void Start()
+        public void MakeReady(SModel_MaskedTile prvData)
         {
+            if (prvData != null)
+            {
+                _state = prvData.state;
+                _rect.position = prvData.rectPosition;
+                _origSI = prvData.origSI;
+                _origPos = prvData.origPos;
+                Debug.Log($"patt :: recovering tile");
+            }
+            else
+            {
+                _state = TileState.INCORRECT;
+                _rect.position = _origPos;
+                Debug.Log($"patt :: new tile");
+            }
             isReady = true;
-            IngameEventsModel.TILE_READY?.Invoke(x, y);
         }
 
-        private void SubscribeEvents() => IngameEventsModel.GRID_MANAGER_READY += OnGridManagerReady;
-        private void UnsubscribeEvents() => IngameEventsModel.GRID_MANAGER_READY -= OnGridManagerReady;
-        private void OnDestroy() => UnsubscribeEvents();
-        private void OnGridManagerReady() => _state = TileState.INCORRECT;
+        // private void SubscribeEvents() => IngameEventsModel.GRID_MANAGER_READY += OnGridManagerReady;
+        // private void UnsubscribeEvents() => IngameEventsModel.GRID_MANAGER_READY -= OnGridManagerReady;
+        // private void OnDestroy() => UnsubscribeEvents();
 
         public void OnPointerDown(PointerEventData eventData)
         {
@@ -97,6 +110,17 @@ namespace Ingame
                 }
             }
             else _rect.position = newPos;
+        }
+
+        public SModel_MaskedTile GetSaveData()
+        {
+            SModel_MaskedTile model = new SModel_MaskedTile();
+            model.IsCorrect = IsCorrect;
+            model.origPos = _origPos;
+            model.origSI = _origSI;
+            model.rectPosition = _rect.position;
+            model.state = _state;
+            return model;
         }
     }
 }

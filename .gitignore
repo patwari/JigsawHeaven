@@ -78,6 +78,7 @@ crashlytics-build.properties
 
 # UserSettings directory
 /[Uu]serSettings/
+/Secrets/
 
 # mono crash files
 mono_crash*.*
