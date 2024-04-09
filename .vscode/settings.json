@@ -1,5 +1,9 @@
 {
-    "cSpell.words": [
-        "Gameplay"
-    ]
+  "editor.formatOnSave": true,
+  "dotnet.codeLens.enableReferencesCodeLens": false,
+  "gitlens.codeLens.enabled": false,
+  "editor.codeLens": true,
+  "omnisharp.autoStart": true,
+  "explorer.autoReveal": "focusNoScroll",
+  "cSpell.words": ["Gameplay", "Ingame"]
 }
