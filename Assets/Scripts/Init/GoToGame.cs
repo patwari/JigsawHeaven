@@ -7,7 +7,7 @@ namespace Temp
     public class GoToGame : MonoBehaviour
     {
         [SerializeField] private float waitTime = 0.5f;
-                private void Start()
+        private void Start()
         {
             Debug.Log($"GoToGame :: start");
             StartCoroutine(WaitAndGoToScene());
@@ -19,9 +19,6 @@ namespace Temp
             GoToScene();
         }
 
-                public void GoToScene()
-        {
-            Events.EventsModel.LOAD_SCENE?.Invoke(GameConstants.Scenes.GAMEPLAY, false, "Loading Game...");
-        }
+        public void GoToScene() => Events.EventsModel.LOAD_SCENE?.Invoke(GameConstants.Scenes.GAMEPLAY, false, "Loading Game...");
     }
 }

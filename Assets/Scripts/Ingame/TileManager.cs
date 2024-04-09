@@ -11,6 +11,9 @@ namespace Ingame
     {
         [SerializeField] private GameObject tilesContainer;
         [SerializeField] private TextMeshProUGUI counter;
+        [SerializeField] private Button quitButton;
+        [SerializeField] private GameObject youWonPanel;
+
         private List<MaskedTile> tiles;
         private IngameState _state = IngameState.INIT;
 
@@ -25,6 +28,10 @@ namespace Ingame
                 MaskedTile t = tilesContainer.transform.GetChild(i).GetComponent<MaskedTile>();
                 if (t != null) tiles.Add(t);
             }
+            SubscribeEvents();
+            youWonPanel.SetActive(false);
+            quitButton.interactable = false;
+            quitButton.onClick.AddListener(OnQuitClicked);
         }
 
         private void Start()
@@ -44,17 +51,9 @@ namespace Ingame
             }
         }
 
-        private void SubscribeEvents()
-        {
-            // IngameEventsModel.TILE_READY += OnTileReady;
-            IngameEventsModel.TILE_DRAG_COMPLETE += OnTileDragComplete;
-        }
+        private void SubscribeEvents() => IngameEventsModel.TILE_DRAG_COMPLETE += OnTileDragComplete;
 
-        private void UnsubscribeEvents()
-        {
-            // IngameEventsModel.TILE_READY -= OnTileReady;
-            IngameEventsModel.TILE_DRAG_COMPLETE -= OnTileDragComplete;
-        }
+        private void UnsubscribeEvents() => IngameEventsModel.TILE_DRAG_COMPLETE -= OnTileDragComplete;
 
         private void OnDestroy()
         {
@@ -71,18 +70,21 @@ namespace Ingame
 
         private void OnAllTilesReady(bool restoring)
         {
-            Debug.Log("patt :: all tiles are ready");
-            // IngameEventsModel.TILE_READY -= OnTileReady;
-            if (!restoring)
+            Debug.Log("OnAllTilesReady :: all tiles are ready");
+            _state = IngameState.PLAY;
+            quitButton.interactable = true;
+
+            if (restoring)
+            {
+                OnTileDragComplete(0, 0);
+            }
+            else
             {
                 ShuffleAllTilesPositions();
-                // IngameEventsModel.GRID_MANAGER_READY?.Invoke();
-
-                // bring down the tiles container to the bottom
                 tilesContainer.transform.localPosition = tilesContainer.transform.localPosition + new Vector3(0, -1000, 0);
+                counter.text = $"Completed = 0/{tiles.Count}";
             }
-
-            _state = IngameState.PLAY;
+            EventsModel.FORCE_HIDE_LOADER?.Invoke();
         }
 
         // shuffle using Fisher-Yates shuffle algorithm
@@ -103,14 +105,11 @@ namespace Ingame
 
         private void OnTileDragComplete(int x, int y)
         {
+            Debug.Log($"OnTileDragComplete :: tile drag complete :: {x}, {y}");
             int count = GetCorrectTileCount();
             counter.text = $"Completed = {count}/{tiles.Count}";
             if (count == tiles.Count)
-            {
-                Debug.Log("patt :: win");
-                _state = IngameState.WIN;
-                IngameEventsModel.BEGIN_GAME_OVER?.Invoke();
-            }
+                OnWin();
         }
 
         private int GetCorrectTileCount()
@@ -124,12 +123,13 @@ namespace Ingame
 
         public void SaveProgress()
         {
-            Debug.Log("patt :: save progress ::  state" + _state);
+            Debug.Log("SaveProgress :: save progress ::  state = " + _state);
 
             if (_state == IngameState.WIN || _state == IngameState.LOSE)
             {
                 DI.di.saver.model = null;
                 DI.di.saver.DeleteFile();
+                PlayerPrefs.DeleteKey("level_to_play");
                 return;
             }
 
@@ -143,6 +143,25 @@ namespace Ingame
                 DI.di.saver.model = model;
                 DI.di.saver.Save();
             }
+        }
+
+        private void OnWin()
+        {
+            _state = IngameState.WIN;
+            quitButton.gameObject.SetActive(false);
+            // IngameEventsModel.BEGIN_GAME_OVER?.Invoke();
+            Invoke("ShowGameOverAfterDelay", 1f);
+        }
+
+        private void ShowGameOverAfterDelay() => youWonPanel.SetActive(true);
+
+        private void OnQuitClicked()
+        {
+            _state = IngameState.LOSE;
+            DI.di.saver.model = null;
+            DI.di.saver.DeleteFile();
+            PlayerPrefs.DeleteKey("level_to_play");
+            EventsModel.LOAD_SCENE?.Invoke("Lobby", false, "Going to Lobby...");
         }
     }
 }

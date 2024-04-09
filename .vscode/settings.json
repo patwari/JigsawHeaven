@@ -5,5 +5,5 @@
   "editor.codeLens": true,
   "omnisharp.autoStart": true,
   "explorer.autoReveal": "focusNoScroll",
-  "cSpell.words": ["Gameplay", "Ingame"]
+  "cSpell.words": ["Gameplay", "Ingame", "interactable"]
 }

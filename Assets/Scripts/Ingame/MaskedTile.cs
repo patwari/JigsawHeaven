@@ -51,13 +51,11 @@ namespace Ingame
                 _rect.position = prvData.rectPosition;
                 _origSI = prvData.origSI;
                 _origPos = prvData.origPos;
-                Debug.Log($"patt :: recovering tile");
             }
             else
             {
                 _state = TileState.INCORRECT;
                 _rect.position = _origPos;
-                Debug.Log($"patt :: new tile");
             }
             isReady = true;
         }

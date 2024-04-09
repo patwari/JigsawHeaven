@@ -24,6 +24,10 @@ namespace Saver
                 model = null;
 
             model = JsonUtility.FromJson<SModel_TileManager>(str);
+
+            // TODO: patwari: to remove
+            // model = null;
+            // PlayerPrefs.DeleteKey("level_to_play");
         }
 
         public void DeleteFile() => FileUtils.DeleteFile(filename);

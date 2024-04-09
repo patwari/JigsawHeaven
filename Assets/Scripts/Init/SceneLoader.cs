@@ -20,6 +20,7 @@ namespace Init
         {
             loadingBar.fillAmount = 0;
             EventsModel.LOAD_SCENE += LoadScene;
+            EventsModel.FORCE_HIDE_LOADER += ForceHideView;
 
             view.SetActive(false);
         }
@@ -28,6 +29,7 @@ namespace Init
         {
             Debug.Log($"{_tt} :: SceneLoader :: destroyed");
             EventsModel.LOAD_SCENE -= LoadScene;
+            EventsModel.FORCE_HIDE_LOADER -= ForceHideView;
         }
 
         private void LoadScene(string sceneName, bool isAdditive, string msg)
@@ -35,6 +37,8 @@ namespace Init
             message.SetText(string.IsNullOrEmpty(msg) ? "" : msg);
             StartCoroutine(LoadSceneAsync(sceneName, isAdditive));
         }
+
+        private void ForceHideView() => view.SetActive(false);
 
         private IEnumerator LoadSceneAsync(string sceneName, bool isAdditive)
         {
@@ -44,24 +48,22 @@ namespace Init
             yield return new WaitForEndOfFrame();
 
             Debug.Log($"{_tt} :: SceneLoader :: BEGIN :: {prvScene} -> {sceneName} :: {(isAdditive ? "Additive" : "Single")}");
-            EventsModel.PRE_SCENE_LOAD_BEGIN?.Invoke(sceneName);
-
             FillLoader(0f);
             AsyncOperation op = SceneManager.LoadSceneAsync(sceneName, isAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);
             float startTime = Time.time;
 
             while (!op.isDone)
             {
-                // [op.progress] goes from 0.0 to 0.9 (max 90%)
                 FillLoader(op.progress / 0.9f);
                 yield return null;
             }
 
-            // we need to show the loader from a minimum time. So, we make a dummy progress.
             float timeTakenToLoad = Time.time - startTime;
 
             FillLoader(1f);
-            bool shouldHide = true;
+
+            // continue to show loader on PROGRESS_RESTORE and GAMEPLAY scenes
+            bool shouldHide = sceneName != GameConstants.Scenes.PROGRESS_RESTORE && sceneName != GameConstants.Scenes.GAMEPLAY;
             if (shouldHide)
             {
                 view.SetActive(false);
@@ -69,7 +71,6 @@ namespace Init
             }
 
             Debug.Log($"{_tt} :: SceneLoader :: END :: {prvScene} -> {sceneName}");
-            EventsModel.SCENE_LOAD_COMPLETED?.Invoke(sceneName);
         }
 
         // perc in range [0, 1]

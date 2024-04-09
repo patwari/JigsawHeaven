@@ -11,5 +11,6 @@ namespace Saver
     public class SModel_TileManager
     {
         public List<SModel_MaskedTile> tiles;
+        public int level = -1;   // 1-index 
     }
 }

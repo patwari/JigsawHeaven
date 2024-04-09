@@ -7,7 +7,7 @@ namespace Temp
     public class GoToProgressRestore : MonoBehaviour
     {
         [SerializeField] private float waitTime = 0.5f;
-                private void Start()
+        private void Start()
         {
             Debug.Log($"GoToProgressRestore :: start");
             StartCoroutine(WaitAndGoToScene());
@@ -19,9 +19,6 @@ namespace Temp
             GoToScene();
         }
 
-                public void GoToScene()
-        {
-            Events.EventsModel.LOAD_SCENE?.Invoke(GameConstants.Scenes.PROGRESS_RESTORE, false, "Loading Game...");
-        }
+        public void GoToScene() => Events.EventsModel.LOAD_SCENE?.Invoke(GameConstants.Scenes.PROGRESS_RESTORE, false, "Loading Game...");
     }
 }
